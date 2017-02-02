@@ -1,0 +1,210 @@
+#!/usr/bin/env python3
+"""ls command alternative.
+Output is either cleanly formatted table or
+string of null terminated file names parseable by xargs command.
+Default behaviour is to show only non-hidden files (no directories) of
+directory passed or current directory if no directory is given in table format.
+Learn more by passing -h or --help option.
+    NOTE: requires python v3+ (tested on v3.6); written for UNIX-like OS
+REAL Programmers don't need comments, for them the code itself is obvious,
+but if you aren't one of them, here you go.
+"""
+
+
+import argparse
+import os
+import sys
+
+# get size of the terminal, useful if output is in table format
+terminalRowSize, terminalColumnSize = os.popen('stty size', 'r').read().split()
+
+parser = argparse.ArgumentParser(description=
+"""ls command alternative.
+Output is either cleanly formatted table or
+string of null terminated file names parseable by xargs command.
+Default behaviour is to show only non-hidden files (no directories) of
+directory passed or current directory if no directory is given in table format.
+""")
+
+parser.add_argument('-x','--xargs', action="store_true",
+help="output will be string of null terminated file names.\
+Can be used as input to other commands like xargs. \
+Absense of this option makes output to be a table, which is default")
+
+group1 = parser.add_mutually_exclusive_group()
+group1.add_argument("-n", "--non-hidden", action='store_true', dest="non_hidden",
+help="show files (and directories with -w) with names that does \
+not start with a dot. This is default")
+group1.add_argument("-i", "--hidden", action='store_true',
+help="show files (and directories with -w) with names starting with a dot")
+group1.add_argument("-a", "--include-hidden", action='store_true', dest="include_hidden",
+help="show all files (and directories with -w), including hidden ones")
+
+group2 = parser.add_mutually_exclusive_group()
+group2.add_argument("-d", "--only-dir", action="store_true", dest="only_dir",
+help="show directories only and not regular file")
+group2.add_argument("-w", "--include-dir", action="store_true", dest="include_dir",
+help="show directories along with files. Can be used with option -n, -i or -a")
+
+parser.add_argument("files", metavar="FILE", nargs='*',
+help="""space separated list of any numbers of files and/or directories.
+If not given current directory will be assumed""")
+
+parser.add_argument("-v", "--version",
+help="output version information and exit", action="store_true")
+
+args = parser.parse_args()
+
+# non-hidden is default option
+if not args.non_hidden and not args.hidden and not args.include_hidden:
+    args.non_hidden = True
+
+
+"""function declarations STARTS here"""
+
+def version():
+    """Print version, license and exit"""
+    if args.version:
+        print(
+"""lsi version 0.1
+
+Copyright (c) 2017 js-d-coder (www.github.com/js-d-coder)
+
+This project is free software released under the MIT/X11 license:
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+""")
+        sys.exit(0)
+
+
+def createFileList(dirname):
+    """create list of files in given directory based on various options"""
+    dirContents = []
+    all = os.listdir(dirname)
+    if args.non_hidden:
+        if args.include_dir:
+            dirContents = [file for file in all if not os.path.isdir(dirname + "/" + file) and file[0] != '.' ]
+            dirContents += [file+"/" for file in all if os.path.isdir(dirname + "/" + file) and file[0] != '.' ]
+        elif args.only_dir:
+            dirContents = [file+"/" for file in all if os.path.isdir(dirname + "/" + file) and file[0] != '.' ]
+        else:
+            dirContents = [file for file in all if not os.path.isdir(dirname + "/" + file) and file[0] != '.' ]
+    elif args.hidden:
+        if args.include_dir:
+            dirContents = [file for file in all if not os.path.isdir(dirname + "/" + file) and file[0] == '.' ]
+            dirContents += [file+"/" for file in all if os.path.isdir(dirname + "/" + file) and file[0] == '.' ]
+        elif args.only_dir:
+            dirContents = [file+"/" for file in all if os.path.isdir(dirname + "/" + file) and file[0] == '.' ]
+        else:
+            dirContents = [file for file in all if not os.path.isdir(dirname + "/" + file) and file[0] == '.' ]
+    else:
+        if args.include_dir:
+            dirContents = [file for file in all if not os.path.isdir(dirname + "/" + file)]
+            dirContents += [file+"/" for file in all if os.path.isdir(dirname + "/" + file)]
+        elif args.only_dir:
+            dirContents = [file+"/" for file in all if os.path.isdir(dirname + "/" + file)]
+        else:
+            dirContents = [file for file in all if not os.path.isdir(dirname + "/" + file)]
+    return dirContents
+
+
+def xargsInput():
+    """create string of null terminated file names for processing by xargs command"""
+    outputString = ""
+    for file in args.files:
+        if not os.path.isdir(file):
+            outputString += file + "\0"
+        else:
+            for inode in createFileList(file):
+                outputString += file + "/" + inode + "\0"
+    return outputString
+
+
+def prettyPrint(list):
+    """print files in table format"""
+    maxlen = 0
+    for l in list:
+        if len(l) > maxlen:
+            maxlen = len(l)
+    colWidth = maxlen + 4
+    noOfCol = int(int(terminalColumnSize)/colWidth)
+    n = 1
+    if noOfCol == 0:
+        for f in list:
+            print("{!r}".format(f))
+    else:
+        for f in list:
+            print('{!r}'.format(f).ljust(colWidth), end="")
+            if n == noOfCol:
+                n = 0
+                print("")
+            n += 1
+    print("\n")
+
+"""function declarations ENDS here"""
+
+
+def main():
+    global didErrorOccur
+    version()
+    if not len(args.files):
+        """if no argument is given, assume it to be current directory"""
+        args.files = ['.']
+    if args.xargs:
+        """if -x or --xargs is given, output string of null terminated file names"""
+        try:
+            print(xargsInput(), end="")
+            sys.exit(0)
+        except FileNotFoundError as err:
+            print(err)
+            sys.exit(2)
+        except PermissionError as err:
+            print(err)
+            sys.exit(2)
+    else:
+        """if -x or --xargs is not given, output file names in table format"""
+
+        for file in args.files:
+            """keep processing next file in the files list even if error occur.
+            if error occur print the error and process next file in the files list.
+            didErrorOccur is used as a flag whether error occur or not"""
+            try:
+                if not os.path.exists(file):
+                    raise FileNotFoundError("{}: cannot access '{}': no such file or directory\n".format(os.path.basename(sys.argv[0]), file))
+                elif not os.path.isdir(file):
+                    print(file, end="\n\n")
+                else:
+                    if len(args.files) > 1:
+                        print(file, ":", sep="")
+                    prettyPrint(createFileList(file))
+            except FileNotFoundError as err:
+                print(err)
+                didErrorOccur = 1
+            except PermissionError:
+                print("{}: cannot open directory '{}': Permission denied\n".format(os.path.basename(sys.argv[0]), file))
+                didErrorOccur = 1
+
+
+if __name__ == "__main__":
+    didErrorOccur = 0 # used as a flag whether error occur or not
+    main()
+    if didErrorOccur:
+        sys.exit(2)
+    else:
+        sys.exit(0)
