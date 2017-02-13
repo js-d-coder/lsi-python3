@@ -26,7 +26,12 @@ Default behaviour is to show only non-hidden files and directories of
 directory passed or current directory if no directory is given, in table format.
 """)
 
-parser.add_argument('-x','--xargs', action="store_true",
+outputFormat = parser.add_mutually_exclusive_group();
+outputFormat.add_argument("-t",action="store_true",
+help="output in table format; this is default")
+outputFormat.add_argument("-1", dest="one", action="store_true",
+help="output on file per line")
+outputFormat.add_argument('-x','--xargs', action="store_true",
 help="""output will be string of null terminated file names;
 can be used as input to other commands like xargs;
 absense of this option makes output to be a table, which is default""")
@@ -66,7 +71,7 @@ def version():
     """Print version, license and exit"""
     if args.version:
         print(
-"""lsi version 1.0.0
+"""lsi version 1.1.0
 
 Copyright (c) 2017 js-d-coder (www.github.com/js-d-coder)
 
@@ -138,24 +143,30 @@ def xargsInput():
 
 def prettyPrint(list):
     """print files in table format"""
-    maxlen = 0
-    for l in list:
-        if len(l) > maxlen:
-            maxlen = len(l)
-    colWidth = maxlen + 4
-    noOfCol = int(int(terminalColumnSize)/colWidth)
-    n = 1
-    if noOfCol == 0:
+    if args.one:
         for f in list:
-            print("{!r}".format(f))
+            print('{!r}'.format(f))
+        print()
     else:
+        maxlen = 0
         for f in list:
-            print('{!r}'.format(f).ljust(colWidth), end="")
-            if n == noOfCol:
-                n = 0
-                print("")
-            n += 1
-    print("\n")
+            if len(f) > maxlen:
+                maxlen = len(f)
+        # 2 for enclosing single qoutes, 2 for spaces after filename
+        colWidth = maxlen + 4
+        noOfCol = int(int(terminalColumnSize)/colWidth)
+        n = 1
+        if noOfCol == 0:
+            for f in list:
+                print("{!r}".format(f))
+        else:
+            for f in list:
+                print('{!r}'.format(f).ljust(colWidth), end="")
+                if n == noOfCol:
+                    n = 0
+                    print("")
+                n += 1
+            print("\n")
 
 """function declarations ENDS here"""
 
