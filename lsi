@@ -71,7 +71,7 @@ def version():
     """Print version, license and exit"""
     if args.version:
         print(
-"""lsi version 1.1.0
+"""lsi version 1.1.1
 
 Copyright (c) 2017 js-d-coder (www.github.com/js-d-coder)
 
@@ -100,34 +100,25 @@ THE SOFTWARE.
 
 def createFileList(dirname):
     """create list of files in given directory based on various options"""
-    dirContents = []
-    all = os.listdir(dirname)
-    if args.non_hidden:
-        if args.only_files:
-            dirContents = [file for file in all if not os.path.isdir(dirname + "/" + file) and file[0] != '.' ]
-        elif args.only_dir:
-            dirContents = [file+"/" for file in all if os.path.isdir(dirname + "/" + file) and file[0] != '.' ]
-        else:
-            dirContents = [file for file in all if not os.path.isdir(dirname + "/" + file) and file[0] != '.' ]
-            dirContents += [file+"/" for file in all if os.path.isdir(dirname + "/" + file) and file[0] != '.' ]
-    elif args.hidden:
-        if args.only_files:
-            dirContents = [file for file in all if not os.path.isdir(dirname + "/" + file) and file[0] == '.' ]
-        elif args.only_dir:
-            dirContents = [file+"/" for file in all if os.path.isdir(dirname + "/" + file) and file[0] == '.' ]
-        else:
-            dirContents = [file for file in all if not os.path.isdir(dirname + "/" + file) and file[0] == '.' ]
-            dirContents += [file+"/" for file in all if os.path.isdir(dirname + "/" + file) and file[0] == '.' ]
-    else:
-        if args.only_files:
-            dirContents = [file for file in all if not os.path.isdir(dirname + "/" + file)]
-        elif args.only_dir:
-            dirContents = [file+"/" for file in all if os.path.isdir(dirname + "/" + file)]
-        else:
-            dirContents = [file for file in all if not os.path.isdir(dirname + "/" + file)]
-            dirContents += [file+"/" for file in all if os.path.isdir(dirname + "/" + file)]
-    return dirContents
+    files = []
+    dirs = []
+    all_files = os.listdir(dirname)
 
+    if args.non_hidden:
+        files = [file for file in all_files if not os.path.isdir(dirname + "/" + file) and file[0] != '.' ]
+        dirs = [file+"/" for file in all_files if os.path.isdir(dirname + "/" + file) and file[0] != '.' ]
+    elif args.hidden:
+        files = [file for file in all_files if not os.path.isdir(dirname + "/" + file) and file[0] == '.' ]
+        dirs = [file+"/" for file in all_files if os.path.isdir(dirname + "/" + file) and file[0] == '.' ]
+    else:
+        files = [file for file in all_files if not os.path.isdir(dirname + "/" + file)]
+        dirs = [file+"/" for file in all_files if os.path.isdir(dirname + "/" + file)]
+    if args.only_files:
+        return files
+    elif args.only_dir:
+        return dirs
+    else:
+        return files + dirs
 
 def xargsInput():
     """create string of null terminated file names for processing by xargs command"""
