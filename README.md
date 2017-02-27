@@ -87,7 +87,7 @@ lsi requires Python version 3 installed before you run it
 
 ## Screenshot (lsi vs ls)
 
-![lsi output](https://imgur.com/a/O4BHc)
+![lsi output](https://i.imgur.com/oUyiq0j.png)
 
 ## License
 
