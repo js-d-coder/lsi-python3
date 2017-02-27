@@ -1,7 +1,7 @@
 # lsi
-ls command alternative. Output is either cleanly formatted table or string of null terminated file names parseable by xargs command. Default behaviour is to show only non-hidden files and directories of directory passed or current directory if no directory is given, in table format.  
+ls command alternative (not a replacement). Output is either cleanly formatted table or string of null terminated file names parseable by xargs command. Default behaviour is to show only non-hidden files and directories of directory passed or current directory if no directory is given, in table format.  
 Written in Python version 3 for UNIX like OS  
-Version 1.1.1  
+Version 1.1.2  
 
 ## Usage
 
@@ -65,3 +65,31 @@ Version 1.1.1
 
     # move all hidden files to hidden-files directory
     $ lsi -ifx | xargs -r0 mv -t hidden-files
+
+
+## Requirement
+
+lsi requires Python version 3 installed before you run it
+
+    # apt install python3 # Ubuntu, Linux Mint, Debian
+    # pacman -S python    # Arch Linux
+    # yum install python3 # Fedora
+    # pkg install python3 # \*BSD
+
+## Installation
+
+(For Ubuntu, Fedora, Linux Mint, Debian, Arch Linux and other Linux distributions including \*BSD and other UNIX like OS)
+
+    $ git clone https://github.com/js-d-coder/lsi-python3.git
+    $ cd lsi-python3
+    $ cp lsi /usr/local/bin/
+    # chmod +x /usr/local/bin/lsi # requires root permission
+
+## Screenshot (lsi vs ls)
+
+![lsi output](https://imgur.com/a/O4BHc)
+
+## License
+
+[MIT](https://mit-license.org/)  
+Copyright (c) 2017 js-d-coder (www.github.com/js-d-coder)

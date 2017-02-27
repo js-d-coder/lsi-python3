@@ -15,7 +15,7 @@ import argparse
 import os
 import sys
 
-# get size of the terminal, useful if output is in table format
+# get size of the terminal for output in table format
 terminalRowSize, terminalColumnSize = os.popen('stty size', 'r').read().split()
 
 parser = argparse.ArgumentParser(description=
@@ -71,7 +71,7 @@ def version():
     """Print version, license and exit"""
     if args.version:
         print(
-"""lsi version 1.1.1
+"""lsi version 1.1.2
 
 Copyright (c) 2017 js-d-coder (www.github.com/js-d-coder)
 
@@ -120,6 +120,7 @@ def createFileList(dirname):
     else:
         return files + dirs
 
+
 def xargsInput():
     """create string of null terminated file names for processing by xargs command"""
     outputString = ""
@@ -132,33 +133,65 @@ def xargsInput():
     return outputString
 
 
+def columnOutput(printFunc):
+    """function when requested output is either table or one-file-per-line.
+    Note the use of printFunc; it substitue prettyPrint function for tabular output,
+    or oneFilePerLine function to output one file per line."""
+    global didErrorOccur
+    moreThanOneArg = 0
+    for file in args.files:
+        """keep processing next file in the files list even if error occur.
+        if error occur print the error and process next file in the files list.
+        didErrorOccur is used as a flag whether error occur or not"""
+        try:
+            if not os.path.exists(file):
+                raise FileNotFoundError("{}: cannot access '{}': no such file or directory".format(os.path.basename(sys.argv[0]), file))
+            elif not os.path.isdir(file):
+                if moreThanOneArg: print()
+                print(file)
+            else:
+                if moreThanOneArg: print()
+                if len(args.files) > 1:
+                    print(file, ":", sep="")
+                printFunc(createFileList(file))
+        except FileNotFoundError as err:
+            if moreThanOneArg: print()
+            print(err)
+            didErrorOccur = 1
+        except PermissionError:
+            if moreThanOneArg: print()
+            print("{}: cannot open directory '{}': Permission denied".format(os.path.basename(sys.argv[0]), file))
+            didErrorOccur = 1
+        finally:
+            moreThanOneArg = 1
+
+
+def oneFilePerLine(list):
+    for l in list:
+        print(l)
+
 def prettyPrint(list):
     """print files in table format"""
-    if args.one:
+    maxlen = 0
+    for f in list:
+        if len(f) > maxlen:
+            maxlen = len(f)
+    # 2 for enclosing single qoutes, 2 for spaces after filename
+    colWidth = maxlen + 4
+    noOfCol = int(int(terminalColumnSize)/colWidth)
+    if noOfCol == 0 or noOfCol == 1:
         for f in list:
-            print('{!r}'.format(f))
-        print()
+            print("{!r}".format(f))
     else:
-        maxlen = 0
+        nthCol=0
         for f in list:
-            if len(f) > maxlen:
-                maxlen = len(f)
-        # 2 for enclosing single qoutes, 2 for spaces after filename
-        colWidth = maxlen + 4
-        noOfCol = int(int(terminalColumnSize)/colWidth)
-        n = 1
-        if noOfCol == 0:
-            for f in list:
-                print("{!r}".format(f))
-        else:
-            for f in list:
-                print('{!r}'.format(f).ljust(colWidth), end="")
-                if n == noOfCol:
-                    n = 0
-                    print("")
-                n += 1
-            print("\n")
-
+            nthCol += 1
+            print('{!r}'.format(f).ljust(colWidth), end="")
+            if nthCol == noOfCol:
+                print()
+                nthCol=0
+        if nthCol != noOfCol:
+            print()
 """function declarations ENDS here"""
 
 
@@ -179,28 +212,13 @@ def main():
         except PermissionError as err:
             print(err)
             sys.exit(2)
+    elif args.one:
+        """output one file per line"""
+        columnOutput(oneFilePerLine)
+        pass
     else:
-        """if -x or --xargs is not given, output file names in table format"""
-
-        for file in args.files:
-            """keep processing next file in the files list even if error occur.
-            if error occur print the error and process next file in the files list.
-            didErrorOccur is used as a flag whether error occur or not"""
-            try:
-                if not os.path.exists(file):
-                    raise FileNotFoundError("{}: cannot access '{}': no such file or directory\n".format(os.path.basename(sys.argv[0]), file))
-                elif not os.path.isdir(file):
-                    print(file, end="\n\n")
-                else:
-                    if len(args.files) > 1:
-                        print(file, ":", sep="")
-                    prettyPrint(createFileList(file))
-            except FileNotFoundError as err:
-                print(err)
-                didErrorOccur = 1
-            except PermissionError:
-                print("{}: cannot open directory '{}': Permission denied\n".format(os.path.basename(sys.argv[0]), file))
-                didErrorOccur = 1
+        """output file names in table format"""
+        columnOutput(prettyPrint)
 
 
 if __name__ == "__main__":
