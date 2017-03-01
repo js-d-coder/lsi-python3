@@ -190,7 +190,7 @@ def prettyPrint(list):
             if nthCol == noOfCol:
                 print()
                 nthCol=0
-        if nthCol != noOfCol:
+        if nthCol != noOfCol and nthCol != 0:
             print()
 """function declarations ENDS here"""
 
