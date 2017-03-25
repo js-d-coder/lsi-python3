@@ -17,7 +17,7 @@ import sys
 import shutil
 
 # get size of the terminal for output in table format
-terminalRowSize, terminalColumnSize = shutil.get_terminal_size()
+terminalColumnSize, terminalRowSize = shutil.get_terminal_size()
 
 parser = argparse.ArgumentParser(description=
 """ls command alternative.
