@@ -1,6 +1,7 @@
 # lsi (a command-line utility)
 ls command alternative (not a replacement). Output is either cleanly formatted table or string of null terminated file names parseable by xargs command. Default behaviour is to show only non-hidden files and directories of directory passed or current directory if no directory is given, in table format.  
-Written in Python version 3 for UNIX like OS  
+Written in Python for UNIX like OS  
+Requires version 3.3 or later  
 Version 1.1.2  
 
 ## Usage
