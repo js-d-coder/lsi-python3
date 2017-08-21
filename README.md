@@ -2,39 +2,52 @@
 ls command alternative (not a replacement). Output is either cleanly formatted table or string of null terminated file names parseable by xargs command. Default behaviour is to show only non-hidden files and directories of directory passed or current directory if no directory is given, in table format.  
 Written in Python for UNIX like OS  
 Requires Python version 3.3 or later  
-Version 1.1.2  
+Version 2
 
 ## Usage
 
-    usage: lsi [-h] [-t | -1 | -x] [-n | -i | -a] [-d | -f] [-v] [FILE [FILE ...]]
+```
+lsi [-h] [-1 | -x] [-n | -i | -a] [-d | -f] [-s | -u | -t | -c | -z]
+           [-r] [-v]
+           [FILE [FILE ...]]
 
-    ls command alternative. Output is either cleanly formatted table or string of
-    null terminated file names parseable by xargs command. Default behaviour is to
-    show only non-hidden files and directories of directory passed or current
-    directory if no directory is given, in table format.
+ls command alternative. Output is either cleanly formatted table or string of
+null terminated file names parseable by xargs command. Default behaviour is to
+show only non-hidden files and directories of directory passed or current
+directory if no directory is given, in table format.
 
-    positional arguments:
-      FILE                  space separated list of any numbers of files and/or
-                            directories; if not given, current directory will be
-                            assumed
+positional arguments:
+  FILE                  space separated list of any numbers of files and/or
+                        directories; if not given, current directory will be
+                        assumed
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      -t                    output in table format; this is default
-      -1                    output on file per line
-      -x, --xargs           output will be string of null terminated file names;
-                            can be used as input to other commands like xargs;
-                            absense of this option makes output to be a table,
-                            which is default
-      -n, --non-hidden      show files and/or directories with names that does not
-                            start with a dot; this is default
-      -i, --hidden          show files and/or directories with names starting with
-                            a dot
-      -a, --include-hidden  show all files and/or directories
-      -d, --only-dir        show directories only and not regular file
-      -f, --only-files      show only regular files and not directories
-      -v, --version         output version information and exit
-
+optional arguments:
+  -h, --help            show this help message and exit
+  -1                    output on file per line
+  -x, --xargs           output will be string of null terminated file names;
+                        can be used as input to other commands like xargs;
+                        absense of this option makes output to be a table,
+                        which is default
+  -n, --non-hidden      show files and/or directories with names that does not
+                        start with a dot; this is default
+  -i, --hidden          show files and/or directories with names starting with
+                        a dot
+  -a, --include-hidden  show all files and/or directories
+  -d, --only-dir        show directories only and not regular file
+  -f, --only-files      show only regular files and not directories
+  -s                    sort files alphabetically in ascending order; this is
+                        default
+  -u                    sort files by access time, newest first
+  -t                    sort files by modification time, newest first
+  -c                    sort files by time of last modification of file status
+                        information, newest first
+  -z                    sort files by their size, largest first, note this
+                        works well only with regular files
+  -r                    reverse order while sorting; can be used in conjuction
+                        with option -s, -u, -t or -c, in absense of these
+                        options, sort alphabetically in descending order
+  -v, --version         output version information and exit
+```
 
 ## Examples
 
@@ -79,12 +92,12 @@ lsi requires Python version 3 installed before you run it
 
 ## Installation
 
-(For Ubuntu, Fedora, Linux Mint, Debian, Arch Linux and other Linux distributions including \*BSD and other UNIX like OS)
+(For Ubuntu, Fedora, Linux Mint, Debian, Arch Linux and other Linux distributions; \*BSD and other UNIX like OS)
 
     $ git clone https://github.com/js-d-coder/lsi-python3.git
     $ cd lsi-python3
-    $ cp lsi /usr/local/bin/
-    # chmod +x /usr/local/bin/lsi # requires root permission
+    # cp lsi /usr/local/bin/
+    # chmod +x /usr/local/bin/lsi
 
 ## Screenshot (lsi vs ls)
 
