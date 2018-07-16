@@ -10,78 +10,78 @@ REAL Programmers don't need comments, for them the code itself is obvious,
 but if you aren't one of them, here you go.
 """
 
-
 import argparse
 import os
 import sys
 import shutil
 
 # get size of the terminal for output in table format
-terminalColumnSize, terminalRowSize = shutil.get_terminal_size()
+terminal_column_size, terminal_row_size = shutil.get_terminal_size()
 
-parser = argparse.ArgumentParser(description=
-"""ls command alternative.
+parser = argparse.ArgumentParser(description="""ls command alternative.
 Output is either cleanly formatted table or
 string of null terminated file names parseable by xargs command.
 Default behaviour is to show only non-hidden files and directories of
 directory passed or current directory if no directory is given, in table format.
 """)
 
-outputFormat = parser.add_mutually_exclusive_group();
-outputFormat.add_argument("-1", dest="one", action="store_true",
-help="output one file per line")
-outputFormat.add_argument('-x','--xargs', action="store_true",
-help="""output will be string of null terminated file names;
-can be used as input to other commands like xargs""")
+output_format = parser.add_mutually_exclusive_group()
+output_format.add_argument("-1", dest="one", action="store_true",
+                           help="output one file per line")
+output_format.add_argument('-x', '--xargs', action="store_true",
+                           help="output will be string of null terminated file names; can be used as input to other \
+                           commands like xargs")
 
-group1 = parser.add_mutually_exclusive_group()
-group1.add_argument("-n", "--non-hidden", action='store_true', dest="non_hidden",
-help="""show files and/or directories with names that does
-not start with a dot; this is default""")
-group1.add_argument("-i", "--hidden", action='store_true',
-help="show files and/or directories with names starting with a dot")
-group1.add_argument("-a", "--include-hidden", action='store_true', dest="include_hidden",
-help="show all files and/or directories")
+file_visibility = parser.add_mutually_exclusive_group()
+file_visibility.add_argument("-n", "--non-hidden", action='store_true', dest="non_hidden",
+                             help="show files and/or directories with names that does not start with a dot; \
+                             this is default")
+file_visibility.add_argument("-i", "--hidden", action='store_true',
+                             help="show files and/or directories with names starting with a dot")
+file_visibility.add_argument("-a", "--include-hidden", action='store_true', dest="include_hidden",
+                             help="show all files and/or directories")
 
-group2 = parser.add_mutually_exclusive_group()
-group2.add_argument("-d", "--only-dir", action="store_true", dest="only_dir",
-help="show directories only and not regular file")
-group2.add_argument("-f", "--only-files", action="store_true", dest="only_files",
-help="show only regular files and not directories")
+file_directory = parser.add_mutually_exclusive_group()
+file_directory.add_argument("-d", "--only-dir", action="store_true", dest="only_dir",
+                            help="show directories only and not regular file")
+file_directory.add_argument("-f", "--only-files", action="store_true", dest="only_files",
+                            help="show only regular files and not directories")
 
-group3 = parser.add_mutually_exclusive_group()
-group3.add_argument("-s", action="store_true",
-help="sort files alphabetically in ascending order; this is default")
-group3.add_argument("-u", action="store_true",
-help="sort files by access time, newest first")
-group3.add_argument("-t", action="store_true",
-help="sort files by modification time, newest first")
-group3.add_argument("-c", action="store_true",
-help="sort files by time of last modification of file status information, newest first")
-group3.add_argument("-z", action="store_true",
-help="sort files by their size, largest first, note this works well only with regular files")
+sorting_options = parser.add_mutually_exclusive_group()
+sorting_options.add_argument("-s", action="store_true",
+                             help="sort contents of given directories alphabetically in ascending order; \
+                             this is default")
+sorting_options.add_argument("-u", action="store_true",
+                             help="sort contents of given directories by access time, newest first")
+sorting_options.add_argument("-t", action="store_true",
+                             help="sort contents of given directories by modification time, newest first")
+sorting_options.add_argument("-c", action="store_true",
+                             help="sort contents of given directories by time of last modification of file status \
+                             information, newest first")
+sorting_options.add_argument("-z", action="store_true",
+                             help="sort contents of given directories by their size, largest first, \
+                             note this works well only with regular files")
 
 parser.add_argument("-r", action="store_true",
-help="""reverse order while sorting; can be used in conjuction with
-option -s, -u, -t or -c; in absense of these options, sort alphabetically in
-descending order""")
+                    help="reverse order while sorting; can be used in conjuction with option -s, -u, -t or -c; \
+                    in absense of these options, sort alphabetically in descending order")
 
 parser.add_argument("files", metavar="FILE", nargs='*',
-help="""space separated list of any numbers of files and/or directories;
-if not given, current directory will be assumed""")
+                    help="space separated list of any numbers of files and/or directories; \
+                    if not given, current directory will be assumed")
 
 parser.add_argument("-v", "--version",
-help="output version information and exit", action="store_true")
+                    help="output version information and exit", action="store_true")
 
 
 """function declarations STARTS here"""
 
+
 def version(args):
     """Print version, license and exit"""
-    print(
-"""lsi version 2
+    print("""lsi version 2
 
-Copyright (c) 2017 js-d-coder (www.github.com/js-d-coder)
+Copyright (c) 2018 js-d-coder (www.github.com/js-d-coder)
 
 This project is free software released under the MIT/X11 license:
 
@@ -110,120 +110,136 @@ class Directory():
     """takes name of directory.
     instance when called returns name of directory passed.
     when called in for loop returns iterable list of files and directory inside the passed directory"""
-    def __init__(self,name):
+
+    def __init__(self, name):
         self.name = str(name)
-        self.files = os.listdir(self.name)
+        self.dir_contents = os.listdir(self.name)
+
     def __iter__(self):
-        for file in self.files:
+        for file in self.dir_contents:
             yield file
+
     def __repr__(self):
         return self.name
+
     def __add__(self, b):
         return self.name + b
+
     def __len__(self):
         return len(self.name)
 
 
-
-def processCmdArgs(args):
+def process_cmd_line_args(args):
     """process command line arguments passed"""
-    filesList = []
-    didErrorOccurLocal = 0
+    files_list = []
+    did_error_occur_local = 0
     files = args.files
     if not len(files):
         files = ['.']
     for file in files:
         try:
             if not os.path.exists(file):
-                didErrorOccurLocal = 1
-                raise FileNotFoundError('{}: cannot access {}: no such file or directory'.format(os.path.basename(sys.argv[0]), file))
+                did_error_occur_local = 1
+                raise FileNotFoundError('{}: cannot access {}: no such file or directory'.format(
+                    os.path.basename(sys.argv[0]), file))
             if os.path.isdir(file):
                 file = Directory(file)
         except FileNotFoundError as err:
-            didErrorOccurLocal = 1
-            print(err,file=sys.stderr, end="\n")
+            did_error_occur_local = 1
+            print(err, file=sys.stderr, end="\n")
         except PermissionError as err:
-            didErrorOccurLocal = 1
-            print('{}: Permission denied: {}'.format(os.path.basename(sys.argv[0]), file),file=sys.stderr, end="\n\n")
-        except:
-            didErrorOccurLocal = 1
-            print('{}: Unexpected error: {}'.format(os.path.basename(sys.argv[0]), sys.exc_info()[0]),file=sys.stderr)
+            did_error_occur_local = 1
+            print('{}: Permission denied: {}'.format(os.path.basename(
+                sys.argv[0]), file), file=sys.stderr, end="\n\n")
+        except Exception as err:
+            did_error_occur_local = 1
+            print('{}: Unexpected error: {}'.format(os.path.basename(
+                sys.argv[0]), sys.exc_info()[0]), file=sys.stderr)
         else:
-            filesList.append(file)
-    if len(filesList):
-        for entry in filesList:
-            if isinstance(entry, Directory):
+            files_list.append(file)
+    if len(files_list):
+        for file in files_list:
+            if isinstance(file, Directory):
+                directory = file
                 if args.non_hidden:
-                    files = [file for file in entry.files if not os.path.isdir(entry + "/" + file) and file[0] != '.' ]
-                    dirs = [file+"/" for file in entry.files if os.path.isdir(entry + "/" + file) and file[0] != '.' ]
+                    files = [file for file in directory.dir_contents if not os.path.isdir(
+                        directory + "/" + file) and file[0] != '.']
+                    dirs = [
+                        file + "/" for file in directory.dir_contents if os.path.isdir(directory + "/" + file)
+                        and file[0] != '.']
                 elif args.hidden:
-                    files = [file for file in entry.files if not os.path.isdir(entry + "/" + file) and file[0] == '.' ]
-                    dirs = [file+"/" for file in entry.files if os.path.isdir(entry + "/" + file) and file[0] == '.' ]
+                    files = [file for file in directory.dir_contents if not os.path.isdir(
+                        directory + "/" + file) and file[0] == '.']
+                    dirs = [
+                        file + "/" for file in directory.dir_contents if os.path.isdir(directory + "/" + file)
+                        and file[0] == '.']
                 else:
-                    files = [file for file in entry.files if not os.path.isdir(entry + "/" + file)]
-                    dirs = [file+"/" for file in entry.files if os.path.isdir(entry + "/" + file)]
+                    files = [file for file in directory.dir_contents if not os.path.isdir(
+                        directory + "/" + file)]
+                    dirs = [
+                        file + "/" for file in directory.dir_contents if os.path.isdir(directory + "/" + file)]
                 if args.only_files:
-                    entry.files = files
+                    directory.dir_contents = files
                 elif args.only_dir:
-                    entry.files = dirs
+                    directory.dir_contents = dirs
                 else:
-                    entry.files = files + dirs
-    return (didErrorOccurLocal, filesList)
+                    directory.dir_contents = files + dirs
+    return (did_error_occur_local, files_list)
 
 
-def sortAlphabetically(filesList, reverse):
+def sort_alphabetically(files_list, reverse):
     """sort files alphabetically in ascending order"""
-    for file in filesList:
+    for file in files_list:
         if isinstance(file, Directory):
-            file.files.sort(reverse=reverse)
-    return filesList
+            file.dir_contents.sort(reverse=reverse)
+    return files_list
 
 
-def sortAccessTime(filesList, reverse):
+def sort_access_time(files_list, reverse):
     """sort files by access time, newest first"""
     reverse = not reverse
-    for file in filesList:
+    for file in files_list:
         if isinstance(file, Directory):
-            file.files.sort(key=lambda x: os.stat(x).st_atime , reverse=reverse)
-    return filesList
+            file.dir_contents.sort(key=lambda x: os.stat(file + '/' + x).st_atime, reverse=reverse)
+    return files_list
 
 
-def sortModificationTime(filesList, reverse):
+def sort_modification_time(files_list, reverse):
     """sort files by modification time, newest first"""
     reverse = not reverse
-    for file in filesList:
+    for file in files_list:
         if isinstance(file, Directory):
-            file.files.sort(key=lambda x: os.stat(x).st_mtime , reverse=reverse)
-    return filesList
+            file.dir_contents.sort(key=lambda x: os.stat(file + '/' + x).st_mtime, reverse=reverse)
+    return files_list
 
 
-def sortStatusInfo(filesList, reverse):
+def sort_status_info(files_list, reverse):
     """sort files by time of last modification of file status information"""
     reverse = not reverse
-    for file in filesList:
+    for file in files_list:
         if isinstance(file, Directory):
-            file.files.sort(key=lambda x: os.stat(x).st_ctime, reverse=reverse)
-    return filesList
+            file.dir_contents.sort(key=lambda x: os.stat(file + '/' + x).st_ctime, reverse=reverse)
+    return files_list
 
 
-def sortSize(filesList, reverse):
+def sort_size(files_list, reverse):
     """sort files by their size, largest first"""
     reverse = not reverse
-    for file in filesList:
+    for file in files_list:
         if isinstance(file, Directory):
-            file.files.sort(key=lambda x: os.stat(x).st_size, reverse=reverse)
-    return filesList
+            file.dir_contents.sort(key=lambda x: os.stat(file + '/' + x).st_size, reverse=reverse)
+    return files_list
 
 
-def printOnePerLine(filesList):
+def print_one_per_line(files_list):
     """print one file per line"""
-    flag=0
-    for file in filesList:
+    flag = 0
+    for file in files_list:
         if flag:
             print()
-        flag=1
+        flag = 1
         if isinstance(file, Directory):
-            if len(filesList) > 1:
+            if len(files_list) > 1:
                 print(file, end=":\n")
             for f in file:
                 print('{!r}'.format(f))
@@ -231,52 +247,53 @@ def printOnePerLine(filesList):
             print(file)
 
 
-def printForXargs(filesList):
+def print_for_xargs(files_list):
     """create string of null terminated file names for processing by xargs command"""
-    outputString = ""
-    for file in filesList:
+    output_string = ""
+    for file in files_list:
         if isinstance(file, Directory):
             for f in file:
-                outputString += file + "/" + f + "\0"
+                output_string += file + "/" + f + "\0"
         else:
-            outputString += file + "\0"
-    print(outputString, end="")
+            output_string += file + "\0"
+    print(output_string, end="")
 
-def prettyPrint(filesList):
+
+def pretty_print(files_list):
     a = 0
-    for file in filesList:
+    for file in files_list:
         if a:
             print()
         a = 1
-        if isinstance(file,Directory):
-            if len(filesList) > 1:
+        if isinstance(file, Directory):
+            if len(files_list) > 1:
                 print(file, ":", sep="")
             maxlen = 0
             for f in file:
                 if len(f) > maxlen:
                     maxlen = len(f)
             # 2 for enclosing single qoutes, 2 for spaces after filename
-            colWidth = maxlen + 4
-            noOfCol = int(int(terminalColumnSize)/colWidth)
-            if noOfCol == 0 or noOfCol == 1:
+            col_width = maxlen + 4
+            no_of_col = int(int(terminal_column_size)/col_width)
+            if no_of_col == 0 or no_of_col == 1:
                 for f in file:
                     print("{!r}".format(f))
             else:
-                nthCol=0
+                nth_col = 0
                 for f in file:
-                    nthCol += 1
-                    print('{!r}'.format(f).ljust(colWidth), end="")
-                    if nthCol == noOfCol:
+                    nth_col += 1
+                    print('{!r}'.format(f).ljust(col_width), end="")
+                    if nth_col == no_of_col:
                         print()
-                        nthCol=0
-                if nthCol != noOfCol and nthCol != 0:
+                        nth_col = 0
+                if nth_col != no_of_col and nth_col != 0:
                     print()
         else:
             print(file)
 
 
 def main():
-    didErrorOccur = 0 # flag showing error occured or not
+    did_error_occur = 0  # flag showing error occured or not
     args = parser.parse_args()
     if args.version:
         version(args)
@@ -286,41 +303,41 @@ def main():
     # sorting option
     if not args.s and not args.u and not args.t and not args.c and not args.z:
         args.s = True
-    didErrorOccur, filesList = processCmdArgs(args)
-    if didErrorOccur and len(filesList):
+    did_error_occur, files_list = process_cmd_line_args(args)
+    if did_error_occur and len(files_list):
         print()
-    if not len(filesList):
+    if not len(files_list):
         sys.exit(1)
 
     """don't print anything if output is request for xargs
     and there is an error with accessing files"""
-    if args.xargs and didErrorOccur:
+    if args.xargs and did_error_occur:
         sys.exit(1)
 
     reverse = False
     if args.r:
         reverse = True
     if args.s:
-        filesList = sortAlphabetically(filesList, reverse)
+        files_list = sort_alphabetically(files_list, reverse)
     elif args.u:
-        filesList = sortAccessTime(filesList, reverse)
+        files_list = sort_access_time(files_list, reverse)
     elif args.t:
-        filesList = sortModificationTime(filesList, reverse)
+        files_list = sort_modification_time(files_list, reverse)
     elif args.c:
-        filesList = sortStatusInfo(filesList, reverse)
+        files_list = sort_status_info(files_list, reverse)
     elif args.z:
-        filesList = sortSize(filesList, reverse)
+        files_list = sort_size(files_list, reverse)
     elif args.r:
-        filesList = sortAlphabetically(filesList, reverse)
+        files_list = sort_alphabetically(files_list, reverse)
 
     if args.one:
-        printOnePerLine(filesList)
+        print_one_per_line(files_list)
     elif args.xargs:
-        printForXargs(filesList)
+        print_for_xargs(files_list)
     else:
-        prettyPrint(filesList)
+        pretty_print(files_list)
 
-    if didErrorOccur:
+    if did_error_occur:
         sys.exit(1)
     else:
         sys.exit(0)

@@ -1,4 +1,5 @@
 # lsi (a command-line utility)
+
 ls command alternative (not a replacement). Output is either cleanly formatted table or string of null terminated file names parseable by xargs command. Default behaviour is to show only non-hidden files and directories of directory passed or current directory if no directory is given, in table format.  
 Written in Python for UNIX like OS  
 Requires Python version 3.3 or later  
@@ -35,16 +36,20 @@ optional arguments:
   -a, --include-hidden  show all files and/or directories
   -d, --only-dir        show directories only and not regular file
   -f, --only-files      show only regular files and not directories
-  -s                    sort files alphabetically in ascending order; this is
-                        default
-  -u                    sort files by access time, newest first
-  -t                    sort files by modification time, newest first
-  -c                    sort files by time of last modification of file status
-                        information, newest first
-  -z                    sort files by their size, largest first, note this
-                        works well only with regular files
+  -f, --only-files      show only regular files and not directories
+  -s                    sort contents of given directories alphabetically in
+                        ascending order; this is default
+  -u                    sort contents of given directories by access time,
+                        newest first
+  -t                    sort contents of given directories by modification
+                        time, newest first
+  -c                    sort contents of given directories by time of last
+                        modification of file status information, newest first
+  -z                    sort contents of given directories by their size,
+                        largest first, note this works well only with regular
+                        files
   -r                    reverse order while sorting; can be used in conjuction
-                        with option -s, -u, -t or -c, in absense of these
+                        with option -s, -u, -t or -c; in absense of these
                         options, sort alphabetically in descending order
   -v, --version         output version information and exit
 ```
@@ -74,12 +79,10 @@ optional arguments:
     'dir6/'          'dir5/'          'dir4/'          'dir3/'          'dir2/'
     'dir1/'
 
-
 [You should not parse the output of `ls` command,](http://www.mywiki.wooledge.org/ParsingLs) but **you can safely parse the output of `lsi`**
 
     # move all hidden files to hidden-files directory
     $ lsi -ifx | xargs -r0 mv -t hidden-files
-
 
 ## Requirement
 
@@ -106,4 +109,9 @@ lsi requires Python version 3 installed before you run it
 ## License
 
 [MIT](https://mit-license.org/)  
-Copyright (c) 2017 js-d-coder (www.github.com/js-d-coder)
+Copyright (c) 2018 js-d-coder (www.github.com/js-d-coder)
+
+## Contributing
+
+This project makes use of PEP8 code style. Linter used is pycodestyle.
+NOTE: Only exception is max-line-length which is set to 120.
