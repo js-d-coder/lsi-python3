@@ -1,6 +1,14 @@
 # lsi (a command-line utility)
 
-ls command alternative (not a replacement). Output is either cleanly formatted table or string of null terminated file names parseable by xargs command. Default behaviour is to show only non-hidden files and directories of directory passed or current directory if no directory is given, in table format.  
+`ls` command alternative (not a replacement). Output is either cleanly formatted table or string of null terminated file names parseable by xargs command. Default behaviour is to show only non-hidden files and directories of directory passed or current directory if no directory is given, in table format.  
+It attempts to solve some problems with traditional UNIX ls command:
+
+* Output is in table format and not garbled like in traditional UNIX `ls` command. (See screen shot below)
+* File names is _single qouted_ to help distinguish files with spaces in their names. (See screen shot below)
+* You can safely parse its output. (See explanation below)
+
+Any improvement or feature addition request is most welcome. I will be adding more features myself in future.
+
 Written in Python for UNIX like OS  
 Requires Python version 3.3 or later  
 Version 2
@@ -79,7 +87,7 @@ optional arguments:
     'dir6/'          'dir5/'          'dir4/'          'dir3/'          'dir2/'
     'dir1/'
 
-[You should not parse the output of `ls` command,](http://www.mywiki.wooledge.org/ParsingLs) but **you can safely parse the output of `lsi`**
+[You should not parse the output of `ls` command,](https://mywiki.wooledge.org/ParsingLs) but **you can safely parse the output of `lsi`**
 
     # move all hidden files to hidden-files directory
     $ lsi -ifx | xargs -r0 mv -t hidden-files
