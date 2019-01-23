@@ -1,3 +1,5 @@
+**NOTE**: this project has moved to https://gitlab.com/js-d-coder/lsi-python3
+
 # lsi (a command-line utility)
 
 `ls` command alternative (not a replacement). Output is either cleanly formatted table or string of null terminated file names parseable by xargs command. Default behaviour is to show only non-hidden files and directories of directory passed or current directory if no directory is given, in table format.  
